@@ -1,7 +1,8 @@
 The purpose of this project is to match place texts to a database of current and historical
 standardized places that includes geo-position information.
+To get a feel for how it works, standardize a place text along the lines of the example URL below:
 
-__[Try the demo](http://opensource.werelate.org:7001)__.
+[http://folg-places.herokuapp.com/api/standardize/Madison?max=100](http://folg-places.herokuapp.com/api/standardize/Madison?max=100)
 
 Database
 --------
