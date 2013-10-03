@@ -49,6 +49,7 @@ public class Standardizer {
    public static enum Mode { BEST, REQUIRED, NEW };
 
    public static final int MAX_LEVELS = 4;
+   public static final int TOP_LEVEL = 1;
    public static final int PLACE_CACHE_MAX_SIZE = 50000;
    public static final int PLACE_CACHE_MAX_SECONDS = 3600;
    public static final int WORD_CACHE_MAX_SIZE = 50000;
@@ -504,7 +505,7 @@ public class Standardizer {
       return result;
    }
 
-   private List<Integer> filterTypeMatches(String typeToken, List<Integer> ids) {
+   private List<Integer> filterTypeMatches(List<Integer> ids, String typeToken) {
       List<Integer> result = new ArrayList<Integer>();
 
       for (int id : ids) {
@@ -527,6 +528,41 @@ public class Standardizer {
       }
 
       return result;
+   }
+
+   private boolean isLocatedIn(int pId, int parentId) {
+      if (pId == parentId) {
+         return true;
+      }
+      Place p = getPlace(pId);
+      if (p.getLocatedInId() > 0 && isLocatedIn(p.getLocatedInId(), parentId)) {
+         return true;
+      }
+      if (p.getAlsoLocatedInIds() != null) {
+         for (int id : p.getAlsoLocatedInIds()) {
+            if (isLocatedIn(id, parentId)) {
+               return true;
+            }
+         }
+      }
+      return false;
+   }
+
+   // remove non top-level places that are outside of the default country
+   private List<Integer> filterDefaultCountry(List<Integer> ids, String defaultCountry) {
+      List<Integer> matchingIds = new ArrayList<Integer>();
+      Place country = standardize(defaultCountry);
+      if (country != null) {
+         for (Integer id : ids) {
+            Place p = getPlace(id);
+            // allow top-level places or places in the country or places also-located-in the country
+            // the last condition allows "defaultCountry" to be a state or county or whatever level you want
+            if (p.getLevel() == TOP_LEVEL || p.getCountryId() == country.getId() || isLocatedIn(id, country.getId())) {
+               matchingIds.add(id);
+            }
+         }
+      }
+      return matchingIds;
    }
 
    private double scoreMatch(String nameToken, Place p) {
@@ -739,12 +775,19 @@ public class Standardizer {
                }
             }
             else {
+               // if we have multiple matches and a default country, filter non-top-level places outside the default country
+               if (ids.size() > 1 && defaultCountry != null && defaultCountry.length() > 0) {
+                  List<Integer> matchingIds = filterDefaultCountry(ids, defaultCountry);
+                  if (matchingIds.size() > 0) {
+                     ids = matchingIds;
+                  }
+               }
                lastFoundLevel = level;
             }
 
             // if we still have multiple matches, filter on type
             if (ids.size() > 1 && nameType[1] != null && !ignoreTypeToken) {
-               List<Integer> matchingIds = filterTypeMatches(nameType[1], ids);
+               List<Integer> matchingIds = filterTypeMatches(ids, nameType[1]);
                // didn't find a type match; log and ignore
                if (matchingIds.size() == 0) {
                   if (errorHandler != null && !errorLogged) {
@@ -775,12 +818,6 @@ public class Standardizer {
          // don't return any results if we didn't match the last level in this mode
       }
       else {
-         // if we have multiple matches and a default country, filter subplaces of the default country
-         if (currentIds.size() > 1 && defaultCountry != null && defaultCountry.length() > 0) {
-            // TODO - handle default country
-
-         }
-
          // remove children if we have the parents
          if (currentIds.size() > 1) {
             currentIds = removeChildIds(currentIds);
