@@ -18,6 +18,9 @@ Of course, the database is a long way from complete.  WeRelate contributors
 continue to improve the database over time.  Updates to the places at WeRelate
 will be added to the database periodically.
 
+This git repo includes an early version of the database to help you get started.
+You can [download the latest version here](http://github.com/DallanQ/Places/wiki/Database-download).
+
 Matching algorithm
 ------------------
 
