@@ -109,6 +109,10 @@ The source code is available under the [Apache 2.0 license](http://www.apache.or
 Data files in the resources directories are available under a [Creative Commons Attribution-ShareAlike license](http://creativecommons.org/licenses/by-sa/3.0/).
 See the LICENSE file for details.
 
+###Attribution
+
+If you want to cite this database/API, please use "WeRelate Place Database".
+
 Roadmap
 -------
 
