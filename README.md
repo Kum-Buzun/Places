@@ -111,7 +111,7 @@ See the LICENSE file for details.
 
 ###Attribution
 
-If you want to cite this database/API, please use "WeRelate Place Database".
+If you want to cite this database/API, please use "WeRelate.org Place Database".
 
 Roadmap
 -------
